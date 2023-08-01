@@ -10,11 +10,12 @@ def is_IPv4(host):
 
 def send_target(target_host, target_port, chain_proxy: tuple):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        print(target_host)
         if is_IPv4(target_host) and isinstance(target_port, int):
             target_port = str(target_port)
 
             s.connect(chain_proxy)
-            data = str((target_host, target_port)).encode()
+            data = ('[' + target_host + ']' + ':' + str(target_port)).encode()
             s.send(data)
         s.close()
 
