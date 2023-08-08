@@ -9,6 +9,8 @@ if __name__ == '__main__':
     parser.add_argument("-port", type=int)
     parser.add_argument("-seq_nr", type=int)
     parser.add_argument("-chain_count", type=int)
+    parser.add_argument("-next_host", type=str)
+    parser.add_argument("-next_port", type=int)
     args = parser.parse_args()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -29,7 +31,7 @@ if __name__ == '__main__':
         else:
             print("[==>] Forwarding target.. [==>]")
             send_target.send_target(data[0], int(data[1]),
-                                    (data[2], int(data[3])))
+                                    (args.next_host, args.next_port))
 
         conn.close()
         s.close()
