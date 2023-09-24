@@ -240,6 +240,18 @@ class Ui_MainWindow(QMainWindow):
 
         self.verticalLayout_5.addWidget(self.ssh_proto)
 
+        self.ignite_ls = QPushButton(self.centralwidget)
+        self.ignite_ls.setObjectName(u"ignite_lightsaber")
+        self.ignite_ls.setFont(font1)
+
+        self.verticalLayout_5.addWidget(self.ignite_ls)
+
+        self.scp_pp_init = QPushButton(self.centralwidget)
+        self.scp_pp_init.setObjectName(u"scp p+p init")
+        self.scp_pp_init.setFont(font1)
+
+        self.verticalLayout_5.addWidget(self.scp_pp_init)
+
         self.horizontalLayout.addLayout(self.verticalLayout_5)
 
         self.verticalLayout_4 = QVBoxLayout()
@@ -439,7 +451,11 @@ class Ui_MainWindow(QMainWindow):
         self.jedi_proto.setText(QCoreApplication.translate(
             "MainWindow", u"JEDI PROTOCOL", None))
         self.ssh_proto.setText(QCoreApplication.translate(
-            "MainWindow", u"SSH Connect", None))
+            "MainWindow", u"SSH Protocol", None))
+        self.ignite_ls.setText(QCoreApplication.translate(
+            "MainWindow", u"IGNITE LIGHTSABER", None))
+        self.scp_pp_init.setText(QCoreApplication.translate(
+            "MainWindow", u"scp p+p init", None))
         self.label_9.setText(QCoreApplication.translate(
             "MainWindow", u"Made by: ", None))
         self.label_10.setText(QCoreApplication.translate(

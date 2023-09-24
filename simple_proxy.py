@@ -1,43 +1,53 @@
+from distutils.util import strtobool
+from rich.table import Table
+from rich.live import Live
+from rich.console import Console
 import sys
 import socket
 import threading
 import argparse
-
-HEX_FILTER = ''.join([(len(repr(chr(i))) == 3) and chr(i)
-                      or '.' for i in range(256)])
-
-
-def hexdump(src, length=16, show=True):
-    if isinstance(src, bytes):
-        try:
-            src = src.decode()
-        except:
-            line = "[*** un-decodable data ***]"
-            print(line)
-            return
-
-    results = list()
-    for i in range(0, len(src), length):
-        word = str(src[i:i+length])
-
-        printable = word.translate(HEX_FILTER)
-        hexa = ' '.join(f'{ord(c)}' for c in word)
-        hex_width = length*3
-        results.append(f'{i:04x} {hexa:<{hex_width}} {printable}')
-
-        if show:
-            for line in results:
-                print(line)
-        else:
-            return results
+from rich.align import Align
+from rich import themes
+from common import string_newline, hexdump
 
 
-def receive_from(connection):
+def generate_table(print_data: tuple, live: Live = None) -> Table:
+    """Make a new table."""
+
+    table = Table(expand=True)
+    table.add_column("HEX_dump_local")
+    table.add_column("Info")
+    table.add_column("Connection")
+    table.add_column("HEX_dump_remote")
+    if live:
+        live.console.clear()
+        print("[ ctrl + c ] to exit..")
+    if print_data:
+        hl, info, cinfo, hr = print_data
+        table.add_row(
+            string_newline(hl[0], 16 * 2) if hl else "", string_newline(info, 100), string_newline(cinfo, 150), string_newline(
+                hr[0], 16 * 2) if hr else ""
+        )
+        # Adding the hex rows
+        for lrow, rrow in zip(hl, hr):
+            table.add_row(
+                string_newline(lrow, 16 * 2) if lrow else "", "", "", string_newline(
+                    rrow, 16 * 2) if rrow else ""
+            )
+    table = Align.center(table, height=10, vertical="middle")
+    return table
+
+
+live = Live(generate_table(()), refresh_per_second=1)
+live.console.set_window_title("[***] Simple proxy [***]")
+
+
+def receive_from(connection: socket.socket):
     buffer = b""
-    connection.settimeout(5)
+    connection.settimeout(20)
     try:
         while True:
-            data = connection.recv(4096)
+            data = connection.recv(4096*2)
             if not data:
                 break
             buffer += data
@@ -57,67 +67,101 @@ def response_handler(buffer):
     return buffer
 
 
-def proxy_handler(client_socket: socket.socket, remote_host, remote_port, receive_first):
+def proxy_handler(client_socket: socket.socket, remote_host, remote_port, receive_first, cinfo):
+
     remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     remote_socket.connect((remote_host, remote_port))
-
+    remote_hex = []
+    local_hex = []
+    info = None
     if receive_first:
         remote_buffer = receive_from(remote_socket)
-        hexdump(remote_buffer)
-
+        _hex = hexdump(remote_buffer)
+        for hex in _hex:
+            remote_hex.append(hex)
         remote_buffer = response_handler(remote_buffer)
 
         if len(remote_buffer):
-            print("[<==] Sending %d bytes to localhost. [<==]" %
-                  len(remote_buffer))
+            info = "[<==] Sending %d bytes to localhost. [<==]" % len(
+                remote_buffer)
             client_socket.send(remote_buffer)
-
+    empty_data_cntr = 0
+    with live as l:
+        l.update(generate_table((local_hex, info, cinfo, remote_hex), l))
     while True:
         local_buffer = receive_from(client_socket)
 
         if len(local_buffer):
-            print("[==>] Received %d bytes from localhost. [==>]")
-            hexdump(local_buffer)
+            info = "[==>] Received %d bytes from localhost. [==>]"
+            _hex = hexdump(local_buffer)
+            print(_hex)
+            for hex in _hex:
+                local_hex.append(hex)
             local_buffer = request_handler(local_buffer)
             remote_socket.send(local_buffer)
-            print("[==>] Sent %d bytes to remote. [==>]" % len(local_buffer))
-
+            info = "[==>] Sent %d bytes to remote. [==>]" % len(local_buffer)
+            with live as l:
+                l.update(generate_table(
+                    (local_hex, info, cinfo, remote_hex), l))
         remote_buffer = receive_from(remote_socket)
         if len(remote_buffer):
-            print("[<==] Receiving %d bytes from remote. [<==]" %
-                  len(remote_buffer))
-            hexdump(remote_buffer)
-
+            info = "[<==] Receiving %d bytes from remote. [<==]" % len(
+                remote_buffer)
+            with live as l:
+                l.update(generate_table(
+                    (local_hex, info, cinfo, remote_hex), l))
+            _hex = hexdump(remote_buffer)
+            print(_hex)
+            for hex in _hex:
+                remote_hex.append(hex)
             remote_buffer = response_handler(remote_buffer)
             client_socket.send(remote_buffer)
-            print("[<==] Sent %d bytes to localhost. [<==]" %
-                  len(remote_buffer))
-
+            info = "[<==] Sent %d bytes to localhost. [<==]" % len(
+                remote_buffer)
+        with live as l:
+            l.update(generate_table((local_hex, info, cinfo, remote_hex), l))
         if not len(local_buffer) or not len(remote_buffer):
-            client_socket.close()
-            remote_socket.close()
-            print("[***] No more data. Closing connections. [***]")
-            break
+            empty_data_cntr += 1
+            if empty_data_cntr >= 5:
+                empty_data_cntr = 0
+                client_socket.close()
+                remote_socket.close()
+                info = "[***] No more data. Closing connections. [***]"
+                break
+
+    with live as l:
+        l.update(generate_table((local_hex, info, cinfo, remote_hex), l))
 
 
-def server_loop(local_host, local_port, remote_host, remote_port, receive_first):
+def server_loop(local_host, local_port, remote_host, remote_port, recieve_first):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    cinfo = "INIT"
+    global live
     try:
         server.bind((local_host, local_port))
     except Exception as e:
-        print("[!!] Cannot bind socket: %r [!!]" % e)
-        print("[!!] Closing program. [!!]")
+        cinfo = "[!!] Cannot bind socket: %r [!!]" % e
+        cinfo += "\n[!!] Closing program. [!!]"
+        print_data = (['init'], ['init'], cinfo, ['init'])
+        with live as l:
+            l.update(generate_table(print_data))
         sys.exit(0)
 
-    print("[*] Listening on %s:%d" % (local_host, local_port))
+    cinfo = "[*] Listening on %s:%d" % (local_host, local_port) + "[*]"
     server.listen(2)
-
+    with live as l:
+        l.update(generate_table(([""], "", cinfo, [""]), l))
     while True:
-        client_socket, addr = server.accept()
-        print("[***] Connection from %s:%d [***]" % (addr[0], addr[1]))
+        try:
+            client_socket, addr = server.accept()
+        except KeyboardInterrupt:
+            live.console.clear()
+            exit(0)
+        cinfo = "[***] Connection from %s:%d [***]" % (addr[0], addr[1])
         proxy_thread = threading.Thread(target=proxy_handler,
                                         args=(client_socket, remote_host,
-                                              remote_port, receive_first))
+                                              remote_port, recieve_first, cinfo))
+        proxy_thread.daemon = True
         proxy_thread.start()
 
 
@@ -127,10 +171,8 @@ if __name__ == '__main__':
     parser.add_argument("-lport", type=int)
     parser.add_argument("-rhost", type=str)
     parser.add_argument("-rport", type=int)
-    parser.add_argument("-recv_first", type=bool)
+    parser.add_argument("-recv_first", type=strtobool)
     args = parser.parse_args()
-
     server_loop(local_host=args.lhost, local_port=args.lport,
                 remote_host=args.rhost, remote_port=args.rport,
-                receive_first=args.receive_first)
-    print('[***] Finished! [***]')
+                recieve_first=args.recv_first)
