@@ -8,16 +8,13 @@ from scapy.all import *
 from scapy.layers.inet import ICMP, IP, UDP
 
 # host to listen on
-print(ifaces)
 iface = ifaces.dev_from_index(2)
 HOST = get_if_addr(iface)
 found_hosts = []
 
-print(HOST)
-
 
 def get_n_byte(target, n, n2):
-    arr = bytearray(target)[0:76]
+    arr = bytearray(target)[n:n2]
     return arr
 
 
@@ -49,10 +46,12 @@ def main():
         try:
             hostdata = sniffer.recv(66565)
         except KeyboardInterrupt:
+            console.clear()
             save: str = input("Save HTML file? (y/n)")
             if save.lower() == "y" or save.lower() == "yes":
                 console.save_html('./scanned_hosts.html',)
                 exit(0)
+            exit(0)
 
         pkt = IP(hostdata)
 
