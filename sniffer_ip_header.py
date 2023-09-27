@@ -5,6 +5,7 @@ import os
 import sys
 from scapy.all import *
 from common import get_iface
+print(os.name)
 
 
 class IP(Structure):
