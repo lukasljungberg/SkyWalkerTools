@@ -5,11 +5,18 @@ from rich.live import Live
 from rich.align import Align
 from rich.console import Console
 from scapy.all import *
-from scapy.layers.inet import ICMP, IP, UDP
+from proto_cls import IP
 
-# host to listen on
-iface = ifaces.dev_from_index(2)
+# host to listen on, works only on linux and macOS
+try:
+    iface = ifaces.dev_from_name("en0")
+except:
+    iface = ifaces.dev_from_name("eth0")
+
 HOST = get_if_addr(iface)
+if HOST == "0.0.0.0":
+    print("No network found..")
+    exit(2)
 found_hosts = []
 
 
@@ -37,8 +44,8 @@ def main():
         # if we are on windows turn on promiscuous mode
         sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
     table = Table()
-    table.add_column("Host")
-    table.add_column("Packet")
+    table.add_column("Source host")
+    table.add_column("Destination address")
     # TODO: implement port info
     table.title = HOST
 
@@ -55,10 +62,10 @@ def main():
 
         pkt = IP(hostdata)
 
-        if str(pkt.getfieldval("src")) not in found_hosts:
-            table.add_row(str(pkt.getfieldval("src")), str(pkt))
+        if str(pkt.src_addr) not in found_hosts:
+            table.add_row(str(pkt.src_addr), str(pkt.dst_addr))
 
-            found_hosts.append(str(pkt.getfieldval("src")))
+            found_hosts.append(str(pkt.src_addr))
             with Live(table, console=console) as l:
                 l.console.clear()
                 l.console.clear_live()
