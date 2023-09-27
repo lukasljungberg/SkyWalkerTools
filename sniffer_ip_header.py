@@ -4,7 +4,7 @@ import struct
 import os
 import sys
 from scapy.all import *
-from common import get_iface
+from common import get_network_adapter_ip
 print(os.name)
 
 
@@ -76,11 +76,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         HOST = sys.argv[1]
     else:
-        # host to listen on, works only on linux and macOS
-        iface = get_iface()
+        # host to listen on, works on linux and macOS and windows
+        HOST = get_network_adapter_ip()
 
-        HOST = get_if_addr(iface)
-        if HOST == "0.0.0.0":
-            print("No network found..")
-            exit(2)
     sniff(HOST)

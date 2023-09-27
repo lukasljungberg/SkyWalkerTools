@@ -48,11 +48,11 @@ def hexdump(src, length=16, show=False):
             return results
 
 
-def get_iface():
-    try:
-        return ifaces.dev_from_name("en0")
-    except:
-        try:
-            return ifaces.dev_from_name("eth0")
-        except:
-            return ifaces.dev_from_name("lan")
+def get_network_adapter_ip():
+    for iface in ifaces.data.keys():
+        res = get_if_addr(ifaces.dev_from_name(iface))
+        isIP = is_ipv4(res) and res != "127.0.0.1" and res != "0.0.0.0"
+        if isIP:
+            return res
+    raise Exception(
+        "No network adapter found! Are you connected to a network?")
