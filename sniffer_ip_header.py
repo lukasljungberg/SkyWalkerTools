@@ -4,6 +4,8 @@ import struct
 from typing import Any
 import os
 import sys
+from scapy.all import *
+from common import get_iface
 
 
 class IP(Structure):
@@ -72,7 +74,13 @@ def sniff(host):
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
-        host = sys.argv[1]
+        HOST = sys.argv[1]
     else:
-        host = '192.168.1.255'
-    sniff(host)
+        # host to listen on, works only on linux and macOS
+        iface = get_iface()
+
+        HOST = get_if_addr(iface)
+        if HOST == "0.0.0.0":
+            print("No network found..")
+            exit(2)
+    sniff(HOST)

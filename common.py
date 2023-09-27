@@ -1,4 +1,5 @@
 import socket
+from scapy.all import *
 HEX_FILTER = ''.join([(len(repr(chr(i))) == 3) and chr(i)
                       or '.' for i in range(256)])
 
@@ -45,3 +46,13 @@ def hexdump(src, length=16, show=False):
                 print(line)
         else:
             return results
+
+
+def get_iface():
+    try:
+        return ifaces.dev_from_name("en0")
+    except:
+        try:
+            return ifaces.dev_from_name("eth0")
+        except:
+            return ifaces.dev_from_name("lan")
