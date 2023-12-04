@@ -28,8 +28,10 @@ console = Console(record=True)
 def main():
     # create raw socket, bin to public interface
     if os.name == 'nt':
+        # IP layer protocol (windows)
         socket_protocol = socket.IPPROTO_IP
     else:
+        # Else icmp layer protocol (macOS)
         socket_protocol = socket.IPPROTO_ICMP
 
     sniffer = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket_protocol)
