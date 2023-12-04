@@ -9,6 +9,7 @@ print(os.name)
 
 
 class IP(Structure):
+    # headers for IP protocol
     _fields_ = [
         ("version", c_ubyte, 4),
         ("ihl", c_ubyte, 4),
@@ -40,6 +41,7 @@ class IP(Structure):
             self.protocol = str(self.protocol_num)
 
 
+# Works best on windows
 def sniff(host):
     if os.name == 'nt':
         socket_protocol = socket.IPPROTO_IP
