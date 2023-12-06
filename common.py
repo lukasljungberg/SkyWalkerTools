@@ -48,7 +48,7 @@ def hexdump(src, length=16, show=False):
             return results
 
 
-def get_network_adapter_ip_unix():
+def get_network_adapter_ip():
     for iface in ifaces.data.keys():
         res = get_if_addr(ifaces.dev_from_name(iface))
         isIP = is_ipv4(res) and res != "127.0.0.1" and res != "0.0.0.0"
@@ -58,7 +58,7 @@ def get_network_adapter_ip_unix():
         "No network adapter found! Are you connected to a network?")
 
 
-def get_network_adapter_ip():
+def get_network_adapter_ip_test():
     from scapy.all import conf
     interfaces = conf.route.routes
     prev = 1
