@@ -49,23 +49,26 @@ def hexdump(src, length=16, show=False):
 
 
 
-def get_all_ip_addresses():
+def is_local_ipv4(ip_address):
+    # Check if the IP address belongs to the local network and starts with "192."
+    return ip_address.startswith("192.168.0.") or ip_address.startswith("192.168.1.")
+
+def get_local_ip_addresses():
     import psutil
-    import socket
-    ip_addresses = []
+    local_ip_addresses = []
 
     # Iterate over all network interfaces
     for interface, addrs in psutil.net_if_addrs().items():
         for addr in addrs:
-            # Check if the address is an IPv4 address
-            if addr.family == socket.AF_INET:
-                ip_addresses.append((interface, addr.address))
+            # Check if the address is an IPv4 address and is on the local network
+            if addr.family == socket.AF_INET and is_local_ipv4(addr.address):
+                local_ip_addresses.append((interface, addr.address))
 
-    return ip_addresses
+    return local_ip_addresses
 
 
 def get_network_adapter_ip():
-    for iface in get_all_ip_addresses():
+    for iface in get_local_ip_addresses():
         res = iface[1]
         isIP = is_ipv4(res) and res != "127.0.0.1" and res != "0.0.0.0"
         if isIP:
@@ -75,7 +78,7 @@ def get_network_adapter_ip():
 
 
 def get_network_adapter_ip_test():
-    interfaces = get_all_ip_addresses()
+    interfaces = get_local_ip_addresses()
     prev = 1
     for interface in interfaces:
         print(interface)
