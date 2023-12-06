@@ -15,14 +15,20 @@ SUBNET = '192.168.1.0/24'
 MESSAGE = "PYTHONIC!"
 
 
-class ICMP:
-    def __init__(self, buff) -> None:
-        header = struct.unpack('<BBHHH', buff)
-        self.type = header[0]
-        self.code = header[1]
-        self.sum = header[2]
-        self.id = header[3]
-        self.seq = header[4]
+class ICMP(Structure):
+    _fields_ = [
+        ("type", c_ubyte, 8),
+        ("code", c_ubyte, 8),
+        ("checksum", c_ushort, 16),
+        ("unused", c_ushort, 16),
+        ("next_hop_mtu", c_ushort, 16),
+    ]
+
+    def __new__(cls, socket_buff=None):
+        return cls.from_buffer_copy(socket_buff)
+
+    def __init__(self, socket_buff=None):
+        pass  # You can add any additional initialization logic if needed
 
 
 class IP(Structure):
@@ -87,13 +93,12 @@ class Scanner:
                 # read packet
                 raw_buffer = self.socket.recvfrom(65535)[0]
                 ip_header = IP(raw_buffer[0:20])
+
                 if ip_header.protocol == "ICMP":
-                    offset = ip_header.ihl * 4
-                    buf = raw_buffer[offset:offset + 8]
-                    icmp_header = ICMP(buf)
-                    if icmp_header.code == 3 and icmp_header.type == 3:
+                    icmp_packet = ICMP(raw_buffer[sizeof(IP):])
+                    if icmp_packet.code == 3 and icmp_packet.type == 3:
                         if ipaddress.ip_address(ip_header.src_addr) in ipaddress.IPv4Network(SUBNET):
-                            if raw_buffer[len(raw_buffer) - len(MESSAGE)] == bytes(MESSAGE, 'utf-8'):
+                            if raw_buffer[len(raw_buffer) - len(MESSAGE):] == bytes(MESSAGE, 'utf-8'):
                                 tgt = str(ip_header.src_addr)
                                 if tgt != self.host and tgt not in hosts_up:
                                     hosts_up.add(str(ip_header.src_addr))
@@ -106,8 +111,6 @@ class Scanner:
                 print(f'\n\nSummary: Hosts up on {SUBNET}')
             for host in sorted(hosts_up):
                 print(f'{host}')
-            print()
-            sys.exit()
 
 
 if __name__ == '__main__':
