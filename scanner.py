@@ -1,3 +1,4 @@
+import threading
 from ctypes import *
 import socket
 import struct
@@ -64,58 +65,49 @@ def udp_sender():
 
 
 class Scanner:
+    """Works best on windows, because of the promiscuous mode."""
     def __init__(self, host) -> None:
         self.host = host
         if os.name == 'nt':
-            pass
+            socket_protocol = socket.IPPROTO_IP
+        else:
+            socket_protocol = socket.IPPROTO_ICMP
 
-# Works best on windows
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket_protocol)
+        self.socket.bind((host, 0))
+        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
 
-
-def sniff(host):
-    if os.name == 'nt':
-        socket_protocol = socket.IPPROTO_IP
-    else:
-        socket_protocol = socket.IPPROTO_ICMP
-
-    sniffer = socket.socket(
-        socket.AF_INET, socket.SOCK_RAW, socket_protocol)
-    sniffer.bind((host, 0))
-    # include IP header
-    sniffer.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
-
-    if os.name == 'nt':
-        sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
-
-    try:
-        while True:
-            # read a packet
-            raw_buffer = sniffer.recv(65535)
-            # create a IP header from first 20 bytes
-            ip_header = IP(raw_buffer[0:20])
-
-            # get the ICMP layer
-            if ip_header.protocol == "ICMP":
-                # print detected protocol and hosts
-                print('Protocol: %s %s -> %s' % (ip_header.protocol,
-                                                 ip_header.src_addr,
-                                                 ip_header.dst_addr))
-                print(f'Version: {ip_header.version}')
-                print(f'Header Length: {ip_header.ihl}')
-                print(f'TTL: {ip_header.ttl}')
-
-                # start of ICMP packet
-                offset = ip_header.ihl * 4
-                buf = raw_buffer[offset:offset + 8]
-                # Create ICMP structure
-                icmp_header = ICMP(buf)
-                print(
-                    f'ICMP -> type: {icmp_header.type} Code: {icmp_header.code}')
-    except KeyboardInterrupt:
-        # if windows, turn off promiscuous mode
         if os.name == 'nt':
-            sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
-        sys.exit()
+            self.socket.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
+
+    def sniff(self) -> None:
+        hosts_up = {f'{str(self.host)} *'}
+        try:
+            while True:
+                # read packet
+                raw_buffer = self.socket.recvfrom(65535)[0]
+                ip_header = IP(raw_buffer[0:20])
+                if ip_header.protocol == "ICMP":
+                    offset = ip_header.ihl * 4
+                    buf = raw_buffer[offset:offset + 8]
+                    icmp_header = ICMP(buf)
+                    if icmp_header.code == 3 and icmp_header.type == 3:
+                        if ipaddress.ip_address(ip_header.src_addr) in ipaddress.IPv4Network(SUBNET):
+                            if raw_buffer[len(raw_buffer) - len(MESSAGE)] == bytes(MESSAGE, 'utf-8'):
+                                tgt = str(ip_header.src_addr)
+                                if tgt != self.host and tgt not in hosts_up:
+                                    hosts_up.add(str(ip_header.src_addr))
+                                    print(f'Host up: {tgt}')
+        except KeyboardInterrupt:
+            if os.name == 'nt':
+                self.socket.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
+            print('\n User interrupted.')
+            if hosts_up:
+                print(f'\n\nSummary: Hosts up on {SUBNET}')
+            for host in sorted(hosts_up):
+                print(f'{host}')
+            print()
+            sys.exit()
 
 
 if __name__ == '__main__':
@@ -125,4 +117,9 @@ if __name__ == '__main__':
         # host to listen on, works on linux and macOS and windows
         HOST = get_network_adapter_ip()
 
-    sniff(HOST)
+    print(f'Host: {HOST}')
+    s = Scanner(HOST)
+    time.sleep(5)
+    t = threading.Thread(target=udp_sender)
+    t.start()
+    s.sniff()
