@@ -118,6 +118,7 @@ if __name__ == '__main__':
         HOST = get_network_adapter_ip()
 
     print(f'Host: {HOST}')
+    exit(0)
     s = Scanner(HOST)
     time.sleep(5)
     t = threading.Thread(target=udp_sender)
