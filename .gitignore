@@ -6,3 +6,5 @@ venv
 *.pyc
 __pycache__/jedi_ui.cpython-310.pyc
 scanned_hosts.html
+*.xml
+*.iml
