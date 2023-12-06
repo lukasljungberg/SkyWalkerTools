@@ -3,6 +3,10 @@ from ctypes import *
 from scapy.all import *
 from common import get_network_adapter_ip
 import ipaddress
+from rich.table import Table
+from rich.live import Live
+from rich.align import Align
+from rich.console import Console
 print(f'OS: {os.name}')
 
 # Subnet to target
@@ -10,6 +14,7 @@ SUBNET = '192.168.1.0/24'
 # Spray-string to send
 MESSAGE = "PYTHONIC!"
 
+console = Console(record=False)
 
 class ICMP(Structure):
     _fields_ = [
@@ -84,21 +89,25 @@ class Scanner:
 
     def sniff(self) -> None:
         hosts_up = {f'{str(self.host)} *'}
+        table = Table()
+        table.add_column("[^] Hosts up (LAN) [^]")
         try:
-            while True:
-                # read packet
-                raw_buffer = self.socket.recvfrom(65535)[0]
-                ip_header = IP(raw_buffer[0:20])
+            with Live(table, console=console) as live:
+                while True:
+                    # read packet
+                    raw_buffer = self.socket.recvfrom(65535)[0]
+                    ip_header = IP(raw_buffer[0:20])
 
-                if ip_header.protocol == "ICMP":
-                    icmp_packet = ICMP(raw_buffer[sizeof(IP):])
-                    if icmp_packet.code == 3 and icmp_packet.type == 3:
-                        if ipaddress.ip_address(ip_header.src_addr) in ipaddress.IPv4Network(SUBNET):
-                            if raw_buffer[len(raw_buffer) - len(MESSAGE):] == bytes(MESSAGE, 'utf-8'):
-                                tgt = str(ip_header.src_addr)
-                                if tgt != self.host and tgt not in hosts_up:
-                                    hosts_up.add(str(ip_header.src_addr))
-                                    print(f'Host up: {tgt}')
+                    if ip_header.protocol == "ICMP":
+                        icmp_packet = ICMP(raw_buffer[sizeof(IP):])
+                        if icmp_packet.code == 3 and icmp_packet.type == 3:
+                            if ipaddress.ip_address(ip_header.src_addr) in ipaddress.IPv4Network(SUBNET):
+                                if raw_buffer[len(raw_buffer) - len(MESSAGE):] == bytes(MESSAGE, 'utf-8'):
+                                    tgt = str(ip_header.src_addr)
+                                    if tgt != self.host and tgt not in hosts_up:
+                                        hosts_up.add(str(ip_header.src_addr))
+                                        table.add_row(str(tgt))
+                                        live.update(table)
         except KeyboardInterrupt:
             if os.name == 'nt':
                 self.socket.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
@@ -120,5 +129,7 @@ if __name__ == '__main__':
     s = Scanner(HOST)
     time.sleep(5)
     t = threading.Thread(target=udp_sender)
+    t.daemon = True
     t.start()
     s.sniff()
+
