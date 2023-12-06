@@ -21,7 +21,7 @@ def get_n_byte(target, n, n2):
     return arr
 
 
-console = Console(record=True)
+console = Console(record=False)
 
 
 def main():
@@ -66,14 +66,10 @@ def main():
             found_hosts.append(str(pkt.src_addr))
             with Live(table, console=console) as l:
                 l.console.clear()
-                l.console.clear_live()
-
                 table_aligned = Align.center(table, vertical="middle")
                 l.update(table_aligned)
             console._record_buffer = console._record_buffer[-(
                 32)-(12)*len(table.rows):-1]
-        console.clear_live()
-        console.clear()
     # if we are on windows turn off promiscuous mode
     if os.name == 'nt':
         sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
