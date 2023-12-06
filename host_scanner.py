@@ -5,12 +5,11 @@ from rich.live import Live
 from rich.align import Align
 from rich.console import Console
 from scapy.all import *
-from sniffer_ip_header import IP
-from common import get_iface
+from sniffer_ip import IP
+from common import get_network_adapter_ip
 
 # host to listen on, works on linux, macOS and windows
-iface = get_iface()
-HOST = get_if_addr(iface)
+HOST = get_network_adapter_ip()
 if HOST == "0.0.0.0":
     print("No network found..")
     exit(2)

@@ -1,9 +1,5 @@
 import threading
 from ctypes import *
-import socket
-import struct
-import os
-import sys
 from scapy.all import *
 from common import get_network_adapter_ip
 import ipaddress
