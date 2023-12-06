@@ -72,8 +72,8 @@ def main():
                 l.update(table_aligned)
             console._record_buffer = console._record_buffer[-(
                 32)-(12)*len(table.rows):-1]
-        print(len(console._record_buffer))
-
+        console.clear_live()
+        console.clear()
     # if we are on windows turn off promiscuous mode
     if os.name == 'nt':
         sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)
