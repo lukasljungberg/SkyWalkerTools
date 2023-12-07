@@ -51,7 +51,7 @@ def hexdump(src, length=16, show=False):
 
 def is_local_ipv4(ip_address):
     # Check if the IP address belongs to the local network and starts with "192."
-    return ip_address.startswith("192.168.0.") or ip_address.startswith("192.168.1.")
+    return ip_address.startswith("192.168.")
 
 def get_local_ip_addresses():
     import psutil
