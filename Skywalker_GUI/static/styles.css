@@ -1,0 +1,26 @@
+:root {
+    --background-color: #1a1a1a;
+    --text-color: #ffffff;
+    --link-color: #4a90e2;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    width: 512px;
+    padding: 20px; /* Optional: Add some padding to the container */
+    border: 1px solid #ccc; /* Optional: Add a border for visualization */
+}
+
+a {
+    color: var(--link-color);
+}

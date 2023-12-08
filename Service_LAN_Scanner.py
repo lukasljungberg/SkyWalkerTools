@@ -7,7 +7,7 @@ def scan_camera(ip, port):
     # Attempt to connect to the specified IP and port
     try:
         with socket.create_connection((ip, port), timeout=1):
-            print(f"Camera found at {ip}:{port}")
+            print(f"Service found at {ip}:{port}")
     except (socket.timeout, socket.error):
         pass
 
