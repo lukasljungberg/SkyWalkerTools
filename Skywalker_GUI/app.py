@@ -1,3 +1,4 @@
+import sys
 
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from flask_bcrypt import Bcrypt
@@ -57,4 +58,5 @@ def process_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    host = sys.argv[1]
+    app.run(debug=True, port=8000, host=host)
