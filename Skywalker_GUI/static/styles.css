@@ -16,7 +16,7 @@ body {
 }
 
 .container {
-    width: 512px;
+    width: 50%;
     padding: 20px; /* Optional: Add some padding to the container */
     border: 1px solid #ccc; /* Optional: Add a border for visualization */
 }

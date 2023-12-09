@@ -51,10 +51,15 @@ def home():
 
 @app.route('/process_data', methods=['POST'])
 def process_data():
+    import methods
     data = request.form['input_data']
-    # Do something with the data (e.g., print it)
-    print(f"Received data: {data}")
-    return 'Data received successfully!'
+
+    if data.split(' ')[0] == 'ls':
+        res = methods.folder_structure(data.split(' ')[1])
+    else:
+        res = "None"
+
+    return redirect(url_for('home', output=res))
 
 
 if __name__ == '__main__':
