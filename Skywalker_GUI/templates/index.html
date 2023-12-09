@@ -6,16 +6,14 @@
     <title>Secure Python Server</title>
   </head>
   <body>
+      <h1>Welcome to the Secure Python Server</h1>
       <div class="container">
-        <h1>Welcome to the Secure Python Server</h1>
-            <form action="/process_data" method="post">
-                <label for="input_data">CMD: </label>
-                <input type="text" name="input_data" required>
-                <input type="submit" value="Send">
-            </form>
-            <div class="container">
-              {{ output }}
-            </div>
+        <label for="input_data">CMD: </label>
+        <input type="text" id="input_data" name="input_data" required>
+        <input id="sendbtn" type="submit" value="Send" onclick="submitForm()">
+        <div id="output" class="container">
+        </div>
       </div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>
