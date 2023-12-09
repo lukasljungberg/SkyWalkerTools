@@ -3,15 +3,15 @@ import os
 import subprocess
 
 
-def get_current_directory():
+def get_cmd_output(cmd: str):
     try:
         # Run the 'pwd' command using subprocess
-        r = subprocess.check_output(['pwd'], universal_newlines=True)
+        r = subprocess.check_output(cmd.split(' '), universal_newlines=True)
         print(r)
         return r.strip()  # Remove any trailing newline characters
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
-        return None
+        return e
 
 
 def folder_structure(directory):

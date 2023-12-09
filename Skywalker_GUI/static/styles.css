@@ -6,16 +6,16 @@
 #output {
     box-shadow: #fff 0 0 10px 2px;
     border-radius: 7px;
-    height: 10px;
     overflow: auto;
-    margin: 10px;
+    height: 150px;
+    width: 250px;
+    margin-top: 10px;
 }
 body {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
     flex-direction: column;
     background-color: var(--background-color);
     color: var(--text-color);
@@ -32,13 +32,7 @@ input {
 }
 
 .container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    width: 50%;
     padding: 10%; /* Optional: Add some padding to the container */
-    border: 1px solid #ccc; /* Optional: Add a border for visualization */
 }
 
 a {

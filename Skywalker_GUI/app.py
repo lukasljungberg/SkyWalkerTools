@@ -54,11 +54,8 @@ def home():
 def process_data():
     import methods
     data = request.form['input_data']
-    print(data)
-    if data.split(' ')[0] == 'ls':
-        res = methods.folder_structure(data.split(' ')[1])
-    if data == 'pwd':
-        res = methods.get_current_directory()
+    if len(data) > 2:
+        res = methods.get_cmd_output(data)
     else:
         res = None
 

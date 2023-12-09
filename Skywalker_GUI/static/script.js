@@ -14,7 +14,7 @@ function submitForm() {
     .then(data => {
         // Update the output div with the returned data
         var outputElement = document.getElementById('output');
-        outputElement.innerHTML = "Server Response:<br>" + JSON.stringify(data);
+        outputElement.innerText = "Server Response:\n" + data;
     })
     .catch(error => {
         console.error('Error:', error);
