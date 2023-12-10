@@ -6,6 +6,7 @@ import subprocess
 
 
 def capture_and_stream(rtmp_server_url):
+    ffmpeg_process = None
     try:
         # Use subprocess to run ffmpeg command for streaming
         cmd = [
