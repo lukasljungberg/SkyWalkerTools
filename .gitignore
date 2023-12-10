@@ -1,7 +1,7 @@
 
 __pycache__/simple_proxy.cpython-310.pyc
 .vscode/settings.json
-venv
+/venv
 *.pyc
 *.pyc
 __pycache__/jedi_ui.cpython-310.pyc
