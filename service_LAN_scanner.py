@@ -22,7 +22,7 @@ def detect_cameras(subnet, start_range, end_range, port):
 
 if __name__ == "__main__":
     # Specify your local network details
-    subnet = "127.0.0"  # Change this to your subnet
+    subnet = "192.168.1"  # Change this to your subnet
     start_ip = 1
     end_ip = 2
     target_port = int(sys.argv[1])
