@@ -31,7 +31,7 @@ def capture_and_stream(rtmp_server_url):
 if __name__ == "__main__":
     stream_url = sys.argv[1]
 
-    if not validators.url(stream_url) or len(sys.argv) < 2:
+    if "rtmp" not in stream_url or len(sys.argv) < 2:
         print("Please provide a valid url")
         exit(0)
     capture_and_stream(stream_url)
