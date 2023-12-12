@@ -1,4 +1,6 @@
 import json
+import os
+import subprocess
 import sys
 
 from flask import Flask, render_template, redirect, url_for, request, flash, session
@@ -8,6 +10,24 @@ app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
 app.config['SECRET_KEY'] = secrets.token_urlsafe(16)
+
+# Configure SSL
+ssl_context = ('cert.crt', 'private.key')
+
+if not os.path.isfile(ssl_context[0]) or not os.path.isfile(ssl_context[1]):
+    openssl_command = [
+        "openssl",
+        "req",
+        "-x509",
+        "-newkey", "rsa:4096",
+        "-nodes",
+        "-out", ssl_context[0],
+        "-keyout", ssl_context[1],
+        "-subj", "/CN=localhost",
+    ]
+
+    result = subprocess.run(openssl_command, capture_output=True, text=True)
+    print(result)
 
 pw = secrets.token_urlsafe(12)
 root_pw = secrets.token_urlsafe(16)
@@ -64,4 +84,4 @@ def process_data():
 
 if __name__ == '__main__':
     host = sys.argv[1]
-    app.run(debug=True, port=8000, host=host)
+    app.run(debug=True, port=8000, host=host, ssl_context=ssl_context)
