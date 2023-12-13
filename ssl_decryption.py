@@ -17,6 +17,7 @@ def decrypt(pcap_path, key_path):
     key = get_private_key(key_path)
 
     for packet in packets:
+        print(packet)
         if 'TLS' in packet:
             tls_record = packet[TLS]
             if hasattr(tls_record, 'records'):
