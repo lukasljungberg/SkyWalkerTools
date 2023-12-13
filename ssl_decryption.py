@@ -17,17 +17,16 @@ def decrypt(pcap_path, key_path):
     key = get_private_key(key_path)
 
     for packet in packets:
-        if 'TLS' in packet:
-            tls_record = packet[TLS13]
-            print(tls_record)
-            if hasattr(tls_record, 'records'):
-                for record in tls_record.records:
-                    print(record)
-                    try:
-                        decrypted_data = key.decrypt(record.load, AsymmetricPadding())
-                        print("Decrypted Data:", decrypted_data.decode('utf-8', 'ignore'))
-                    except Exception as exc:
-                        print("Exc: ", exc)
+        tls_record = packet[TLS13]
+        print(tls_record)
+        if hasattr(tls_record, 'records'):
+            for record in tls_record.records:
+                print(record)
+                try:
+                    decrypted_data = key.decrypt(record.load, AsymmetricPadding())
+                    print("Decrypted Data:", decrypted_data.decode('utf-8', 'ignore'))
+                except Exception as exc:
+                    print("Exc: ", exc)
 
 
 if __name__ == '__main__':
