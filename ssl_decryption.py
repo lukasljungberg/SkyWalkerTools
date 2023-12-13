@@ -1,6 +1,5 @@
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.asymmetric.padding import AsymmetricPadding
-from scapy.layers.tls.all import *
 from scapy.all import *
 
 
@@ -19,7 +18,7 @@ def decrypt(pcap_path, key_path):
     for packet in packets:
         tls_record = None
         try:
-            tls_record = packet[TLS13]
+            tls_record = packet[Raw]
             print(tls_record)
         except Exception as exc:
             print(exc)
