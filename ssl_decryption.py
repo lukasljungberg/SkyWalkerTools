@@ -26,13 +26,11 @@ def decrypt(pcap_path, key_path):
         except Exception as exc:
             print(exc)
         if hasattr(tls_record, 'load'):
-            for record in tls_record.records:
-                print(record)
-                try:
-                    decrypted_data = key.decrypt(tls_record.load, AsymmetricPadding())
-                    print("Decrypted Data:", decrypted_data.decode('utf-8', 'ignore'))
-                except Exception as exc:
-                    print("Exc: ", exc)
+            try:
+                decrypted_data = key.decrypt(tls_record.load, AsymmetricPadding())
+                print("Decrypted Data:", decrypted_data.decode('utf-8', 'ignore'))
+            except Exception as exc:
+                print("Exc: ", exc)
 
 
 if __name__ == '__main__':
