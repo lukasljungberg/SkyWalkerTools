@@ -9,7 +9,7 @@ def get_private_key(file_path):
     with open(file_path, 'rb') as key_file:
         key = key_file.read()
 
-    return load_pem_private_key(key, b"")
+    return load_pem_private_key(key, None)
 
 
 def decrypt(pcap_path, key_path):
