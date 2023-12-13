@@ -19,8 +19,10 @@ def decrypt(pcap_path, key_path):
     for packet in packets:
         if 'TLS' in packet:
             tls_record = packet[TLS13]
+            print(tls_record)
             if hasattr(tls_record, 'records'):
                 for record in tls_record.records:
+                    print(record)
                     try:
                         decrypted_data = key.decrypt(record.load, AsymmetricPadding())
                         print("Decrypted Data:", decrypted_data.decode('utf-8', 'ignore'))
