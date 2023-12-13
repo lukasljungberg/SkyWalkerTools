@@ -1,5 +1,5 @@
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric.padding import AsymmetricPadding
 from scapy.layers.tls.all import *
 from scapy.all import *
 
@@ -9,7 +9,7 @@ def get_private_key(file_path):
     with open(file_path, 'rb') as key_file:
         key = key_file.read()
 
-    return load_pem_private_key(key)
+    return load_pem_private_key(key, b"")
 
 
 def decrypt(pcap_path, key_path):
@@ -22,7 +22,7 @@ def decrypt(pcap_path, key_path):
             if hasattr(tls_record, 'records'):
                 for record in tls_record.records:
                     try:
-                        decrypted_data = key.decrypt(record.load)
+                        decrypted_data = key.decrypt(record.load, AsymmetricPadding())
                         print("Decrypted Data:", decrypted_data.decode('utf-8', 'ignore'))
                     except Exception as exc:
                         print("Exc: ", exc)
