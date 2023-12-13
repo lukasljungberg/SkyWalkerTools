@@ -1,6 +1,6 @@
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.asymmetric.padding import AsymmetricPadding
-from scapy.layers.tls.all import *
+from scapy.layers.tls.all import TLS13
 from scapy.all import *
 
 
@@ -17,9 +17,8 @@ def decrypt(pcap_path, key_path):
     key = get_private_key(key_path)
 
     for packet in packets:
-        print(packet)
         if 'TLS' in packet:
-            tls_record = packet[TLS]
+            tls_record = packet[TLS13]
             if hasattr(tls_record, 'records'):
                 for record in tls_record.records:
                     try:
