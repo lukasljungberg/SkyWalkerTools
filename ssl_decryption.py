@@ -21,15 +21,15 @@ def decrypt(pcap_path, key_path):
         tls_record = None
         print(packet)
         try:
-            tls_record = packet[TLS13]
+            tls_record = packet[Raw]
             print(tls_record)
         except Exception as exc:
             print(exc)
-        if hasattr(tls_record, 'records'):
+        if hasattr(tls_record, 'load'):
             for record in tls_record.records:
                 print(record)
                 try:
-                    decrypted_data = key.decrypt(record.load, AsymmetricPadding())
+                    decrypted_data = key.decrypt(tls_record.load, AsymmetricPadding())
                     print("Decrypted Data:", decrypted_data.decode('utf-8', 'ignore'))
                 except Exception as exc:
                     print("Exc: ", exc)
