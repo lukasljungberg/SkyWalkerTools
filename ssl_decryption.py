@@ -27,7 +27,7 @@ def decrypt(pcap_path, key_path):
             print(exc)
         if hasattr(tls_record, 'load'):
             try:
-                decrypted_data = key.decrypt(tls_record.load, AsymmetricPadding())
+                decrypted_data = key.decrypt(tls_record.load)
                 print("Decrypted Data:", decrypted_data.decode('utf-8', 'ignore'))
             except Exception as exc:
                 print("Exc: ", exc)
