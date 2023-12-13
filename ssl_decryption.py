@@ -19,8 +19,9 @@ def decrypt(pcap_path, key_path):
 
     for packet in packets:
         tls_record = None
+        print(packet)
         try:
-            tls_record = packet[TLS]
+            tls_record = packet[TLS13]
             print(tls_record)
         except Exception as exc:
             print(exc)
