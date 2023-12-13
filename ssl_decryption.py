@@ -17,8 +17,12 @@ def decrypt(pcap_path, key_path):
     key = get_private_key(key_path)
 
     for packet in packets:
-        tls_record = packet[TLS13]
-        print(tls_record)
+        tls_record = None
+        try:
+            tls_record = packet[TLS13]
+            print(tls_record)
+        except Exception as exc:
+            print(exc)
         if hasattr(tls_record, 'records'):
             for record in tls_record.records:
                 print(record)
