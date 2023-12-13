@@ -1,6 +1,6 @@
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.asymmetric.padding import AsymmetricPadding
-from scapy.layers.tls.all import TLS13
+from scapy.layers.tls.all import *
 from scapy.all import *
 
 
