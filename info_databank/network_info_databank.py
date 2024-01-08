@@ -1,7 +1,8 @@
+import json
 from pprint import pprint
 
 counter = 0
-
+search_str = ''
 
 class Item:
     def __init__(self):
@@ -109,7 +110,8 @@ def add_item(_itm: Item):
     _w_handle.close()
 
 
-def get_items(search_str: str = ""):
+def get_items():
+    global search_str
     _r_handle = open('data-bank.nid', 'r')
     lines = _r_handle.readlines()
     cat_type_ = ''
@@ -150,18 +152,45 @@ def get_category_names(type_: str = '') -> list[str]:
     return name_list
 
 
-def display(items: bool = True, search_str: str = ""):
+def get_categories() -> set[str]:
+    global search_str
+    _r_handle = open('data-bank.nid', 'r')
+    lines = _r_handle.readlines()
+    categories = set()
+    for line in lines:
+        cat_type_ = line.split(':')[0]
+        is_cat = True
+        for c in cat_type_:
+            if c.isdigit():
+                is_cat = False
+
+        if is_cat:
+            name_ = line.split(':')[1].replace(';', '')
+            type_ = line.split(':')[0]
+            if search_str in name_:
+                categories.add(json.dumps({'type': type_, 'name': name_}))
+            if not search_str:
+                categories.add(json.dumps({'type': type_, 'name': name_}))
+    return categories
+
+
+def display(items: bool = True):
+    global search_str
     if items:
-        ls(get_items(search_str), 'Items:')
+        ls(get_items(), 'Items:')
+    else:
+        ls(get_categories(), "Categories:")
 
 
 def ls(list_: [], title: str):
     from rich.console import Console
     console = Console()
     console.clear()
-    pprint('\t' + title)
+    print('\t' + title)
     for i in list_:
-        pprint(i, indent=2)
+        for key in json.loads(i):
+            console.print(key + ' --> ', end='\t')
+            console.print(json.loads(i)[key], end='\n')
 
 
 if __name__ == '__main__':
@@ -185,10 +214,13 @@ if __name__ == '__main__':
         if 'cat' and 'name' in inp:
             category_types = input('Do you know the type example -> A | B | FF:')
             ls(get_category_names(category_types), title="Categories:")
-        # get category type
-    if 'ls' and 'items' in inp:
-        search_str = input('Search string:')
-        display(items=True, search_str=search_str)
+    if 'ls':
+        if 'cat' in inp:
+            search_str = input('Search string:')
+            display(items=False)
+        if 'items' in inp:
+            search_str = input('Search string:')
+            display(items=True)
 
 
 
